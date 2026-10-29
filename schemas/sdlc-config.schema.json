@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "rem-sdlc project profile (frontmatter)",
+  "description": "Schema for the YAML frontmatter of _/sdlc-config.md. Captures user decisions only — project state (package manager, node version, default branch, CI workflows) is re-detected at use site by each /rem-sdlc:* command, so it stays fresh without re-running /rem-sdlc:init. The freeform markdown body below the frontmatter is read verbatim by every /rem-sdlc:* command and inlined into sub-agent prompts.",
+  "type": "object",
+  "required": ["detected_at", "ticketing", "spec", "validation", "conventions"],
+  "additionalProperties": false,
+  "properties": {
+    "detected_at": { "type": "string", "format": "date" },
+    "ticketing": {
+      "type": "object",
+      "required": ["system"],
+      "additionalProperties": false,
+      "properties": {
+        "system": {
+          "type": "string",
+          "enum": ["jira", "linear", "github", "none"]
+        },
+        "prefix": { "type": ["string", "null"] },
+        "mcp": {
+          "type": ["string", "null"],
+          "description": "MCP server name (e.g. 'atlassian', 'linear') used by /rem-sdlc:intake to fetch ticket bodies."
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["convention"],
+      "additionalProperties": false,
+      "properties": {
+        "convention": {
+          "type": "string",
+          "enum": ["ticket-references-path", "fixed-dir", "freeform"]
+        },
+        "default_dir": { "type": ["string", "null"] }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["project-playwright", "standalone-playwright", "manual"],
+          "description": "How /rem-sdlc:validate runs. 'project-playwright' reuses the host project's playwright config and dependencies. 'standalone-playwright' has sdlc install and run its own playwright instance against base_url — the project itself doesn't need any playwright setup. 'manual' skips the validation phase entirely (the assertions/demo are produced out-of-band, or the feature is non-UI)."
+        },
+        "base_url": {
+          "type": ["string", "null"],
+          "description": "Required for project-playwright and standalone-playwright modes."
+        },
+        "credentials": {
+          "type": ["string", "null"],
+          "description": "Path to the gitignored credentials file (defaults to _/demo/credentials.json)."
+        }
+      }
+    },
+    "conventions": {
+      "type": "object",
+      "required": ["track_dir", "demo_dir", "recordings_dir"],
+      "additionalProperties": false,
+      "properties": {
+        "commit_style": {
+          "type": "string",
+          "enum": ["conventional", "freeform"]
+        },
+        "commit": {
+          "type": "object",
+          "description": "How the agent commits code changes during implement and review phases. Three strategies: 'skill' (invoke a named skill), 'command' (run a shell command), 'prompt' (agent follows free-text instructions). Omit the whole block to use the default: skill=commit-work.",
+          "additionalProperties": false,
+          "properties": {
+            "via": {
+              "type": "string",
+              "enum": ["skill", "command", "prompt"],
+              "default": "skill",
+              "description": "Dispatch strategy. 'skill': invoke a Claude Code skill by name. 'command': run a shell command. 'prompt': the agent reads the value as natural-language commit instructions and decides how to stage and message."
+            },
+            "skill": {
+              "type": ["string", "null"],
+              "description": "Skill name to invoke when via=skill. Default: 'commit-work'."
+            },
+            "command": {
+              "type": ["string", "null"],
+              "description": "Shell command to run when via=command. Use {{MESSAGE}} as a placeholder for the drafted commit message."
+            },
+            "prompt": {
+              "type": ["string", "null"],
+              "description": "Free-text instructions the agent follows when via=prompt. Describe grouping rules, message format, what to exclude, sign-off requirements, etc."
+            }
+          }
+        },
+        "branch_pattern": {
+          "type": ["string", "null"],
+          "description": "Template like '<type>/<TICKET>'. Supported substitutions: <type>, <TICKET>, <author> (from git config user.name)."
+        },
+        "track_dir": { "type": "string" },
+        "demo_dir": { "type": "string" },
+        "recordings_dir": { "type": "string" }
+      }
+    },
+    "pr": {
+      "type": "object",
+      "description": "Per-project preferences applied by /rem-sdlc:pr when rendering the PR body. Can be overridden per-run via the command's --style flag.",
+      "additionalProperties": false,
+      "properties": {
+        "body_style": {
+          "type": "string",
+          "enum": ["concise", "standard"],
+          "default": "standard",
+          "description": "'standard' (default) inlines the full AC checklist, per-requirement validation table, console/network defects, review severity table, test plan, and reviewer notes. 'concise' keeps only the one-line summary, ticket link, AC checklist, and one-line validation + review outcomes — and surfaces reviewer notes only when there are open DECIDE items. Use 'concise' for tickets where the AC list is long and the reviewer doesn't need the per-requirement detail to make a call."
+        }
+      }
+    },
+    "overrides": {
+      "type": "object",
+      "description": "Pinned values that bypass each command's auto-detection. null means re-detect on every run. Use only when detection picks the wrong value (e.g. multiple package.json scripts that could be 'the pipeline').",
+      "additionalProperties": false,
+      "properties": {
+        "default_branch": {
+          "type": ["string", "null"],
+          "description": "Pin when 'git symbolic-ref refs/remotes/origin/HEAD' returns the wrong branch (shallow clones, mirrored repos, etc.)."
+        },
+        "pipeline_command": {
+          "type": ["string", "null"],
+          "description": "Aggregate gate (lint + typecheck + test + build). Auto-detect order: scripts.pipeline -> scripts.ci -> scripts.check -> chain of lint+typecheck+test+build. Lint-coverage guarantee: if the resolved command does not already run lint, the pre-PR gate appends the detected lint step so PRs aren't opened on style failures CI would reject. A pinned value here is still subject to that guarantee."
+        },
+        "dev_command": {
+          "type": ["string", "null"],
+          "description": "Pin when root scripts.dev isn't the right entry point (e.g. monorepo with per-app dev scripts)."
+        }
+      }
+    },
+    "sizing": {
+      "type": "object",
+      "description": "Optional policy for ticket size adaptivity (see /rem-sdlc:intake §4b). Tunes how intake proposes a size and what the 's' tier drops. Omit the whole block to use built-in defaults: small ⇒ ≤2 ACs and ≤3 requirements with no frontend/mixed requirement; 's' skips e2e/demo and the 3-agent review (pipeline rerun is the gate); 'l' triggers at >4 ACs spanning distinct concerns.",
+      "additionalProperties": false,
+      "properties": {
+        "small_max_requirements": {
+          "type": ["integer", "null"],
+          "description": "Propose 's' only when requirement count is at or below this. Default 3."
+        },
+        "small_max_acs": {
+          "type": ["integer", "null"],
+          "description": "Propose 's' only when AC count is at or below this. Default 2."
+        },
+        "large_min_acs": {
+          "type": ["integer", "null"],
+          "description": "Propose 'l' (mother + per-AC-group sub-tracks) when AC count is at or above this. Default 5."
+        },
+        "small_skips_review": {
+          "type": "boolean",
+          "default": true,
+          "description": "When true (default), the 's' tier skips the 3-agent review and relies on the quality-gate pipeline rerun. Set false to keep the review phase even for small tickets."
+        }
+      }
+    },
+    "phase_prompts": {
+      "type": "object",
+      "description": "Per-phase prompt overlays appended to each phase's base dispatch prompt at cycle time. Lets teams inject house conventions (review checklists, deploy gates, Playwright helpers) without editing agent definitions. Omitting the block entirely is valid — all phases default to no overlay.",
+      "additionalProperties": false,
+      "properties": {
+        "intake": {
+          "type": ["string", "null"],
+          "description": "Appended to the intake agent prompt. Use for custom AC decomposition rules or ticket-parsing conventions."
+        },
+        "implement": {
+          "type": ["string", "null"],
+          "description": "Appended to the implement agent prompt. Use for house coding patterns, required review steps, or deploy-gate conventions."
+        },
+        "review": {
+          "type": ["string", "null"],
+          "description": "Appended to the review agent prompt. Use for a house review checklist or team-specific severity thresholds."
+        },
+        "validate": {
+          "type": ["string", "null"],
+          "description": "Appended to the validate agent prompt. Use for stack-specific Playwright helpers or demo scripting conventions."
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "description": "Session budgets and the Obsidian vault used by /rem-sdlc:session-close and rem-ralph. Omit to use defaults.",
+      "additionalProperties": false,
+      "properties": {
+        "max_tokens": { "type": ["integer", "null"], "description": "Soft session budget; null = unlimited." },
+        "max_iterations": { "type": ["integer", "null"], "description": "rem-ralph outer-loop default." },
+        "warn_tokens_ratio": { "type": ["number", "null"] },
+        "on_limit": { "type": "string", "enum": ["handoff", "stop", "ask"] },
+        "close_on_cycle_end": { "type": "boolean" },
+        "vault": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "type": ["string", "null"], "description": "Local clone of the vault (or a git URL to clone into clone_dir)." },
+            "clone_dir": { "type": ["string", "null"] },
+            "remote": { "type": ["string", "null"] },
+            "work_root": { "type": ["string", "null"] },
+            "project_name": { "type": ["string", "null"] },
+            "git_commit": { "type": "boolean" },
+            "git_push": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

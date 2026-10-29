@@ -1,0 +1,33 @@
+## Summary
+
+{{ONE_PARAGRAPH_SUMMARY}}
+
+**Ticket:** {{TICKET_LINK}}
+**Local gate:** {{LOCAL_GATE_LINE}}
+
+## Acceptance criteria
+
+{{AC_CHECKLIST}}
+
+## Validation
+
+{{VALIDATION_OUTCOME_LINE}}
+
+{{VALIDATION_PER_REQUIREMENT_TABLE}}
+
+{{VALIDATION_CONSOLE_NETWORK_TABLE_OR_NONE}}
+
+## Review
+
+{{REVIEW_SEVERITY_TABLE}}
+
+{{REVIEW_RESOLUTION_LINE}}
+
+## Test plan
+
+- [ ] {{TEST_PLAN_ITEM_1}}
+- [ ] {{TEST_PLAN_ITEM_2}}
+
+## Notes for reviewers
+
+{{REVIEWER_NOTES_OR_NONE}}

@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "rem-sdlc track file frontmatter",
+  "description": "YAML frontmatter contract for _/tracks/<TICKET>.md. Every cycle command reads and writes this frontmatter — the body of the markdown file is for humans.",
+  "type": "object",
+  "required": ["ticket", "title", "status", "created", "updated", "acs"],
+  "additionalProperties": false,
+  "properties": {
+    "ticket": {
+      "type": "string",
+      "description": "Ticket identifier or freeform slug when ticketing.system is 'none'.",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "in_progress", "in_review", "ready_to_merge", "merged", "abandoned"]
+    },
+    "size": {
+      "type": "string",
+      "enum": ["s", "m", "l"],
+      "default": "m",
+      "description": "Ticket size tier, proposed at intake and confirmed by the user. 's' (small/XS) skips e2e + demo and the 3-agent review — the project's quality-gate pipeline rerun is the sole verification. 'm' (default) runs the full cycle. 'l' is a mother track that splits into one sub-track per AC group (see parent/children). Absent ⇒ 'm', so pre-existing tracks stay valid. Downgrading a track to 's' always needs explicit user confirmation, even under --auto."
+    },
+    "parent": {
+      "type": ["string", "null"],
+      "description": "For an 'l' sub-track: the ticket id of its mother track. null for standalone and mother tracks."
+    },
+    "children": {
+      "type": ["array", "null"],
+      "items": { "type": "string", "minLength": 1 },
+      "description": "For an 'l' mother track: the ticket ids of its sub-tracks (one per AC group). null for standalone and sub-tracks."
+    },
+    "created": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "branch": {
+      "type": ["string", "null"],
+      "description": "Set by /rem-sdlc:implement when the branch is created."
+    },
+    "spec": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] },
+        "hash": {
+          "type": ["string", "null"],
+          "description": "SHA-256 of the spec slice captured at intake; /rem-sdlc:revalidate uses it to detect drift."
+        },
+        "rows": {
+          "type": ["string", "null"],
+          "description": "Row range when the ticket references a sub-section, e.g. '131-132'."
+        }
+      }
+    },
+    "figma": {
+      "type": ["string", "null"]
+    },
+    "pr": {
+      "type": ["string", "null"],
+      "description": "PR URL once /rem-sdlc:pr opens one."
+    },
+    "demo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scenario": { "type": ["string", "null"] },
+        "recording": { "type": ["string", "null"] },
+        "report": { "type": ["string", "null"] },
+        "applicable": {
+          "type": "boolean",
+          "default": true,
+          "description": "False when the feature has no UI surface; /rem-sdlc:validate writes a 'na' report and skips recording."
+        }
+      }
+    },
+    "acs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "requirements"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^AC[0-9]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "requirements": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "text", "owner", "status"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^R[0-9]+\\.[0-9]+$" },
+                "text": { "type": "string", "minLength": 1 },
+                "owner": {
+                  "type": "string",
+                  "enum": ["backend", "frontend", "shared", "infra", "docs", "mixed"]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["not_started", "in_progress", "done", "blocked", "na"]
+                },
+                "evidence": {
+                  "type": ["string", "null"],
+                  "description": "file:line reference or commit SHA recording where the requirement landed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "phase_log": {
+      "type": "array",
+      "description": "One entry per cycle phase that ran. Append-only; /rem-sdlc:cycle and individual commands both write here.",
+      "items": {
+        "type": "object",
+        "required": ["phase", "at", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": ["intake", "implement", "validate", "review", "pr", "pr-comments", "revalidate"]
+          },
+          "at": { "type": "string", "format": "date-time" },
+          "note": { "type": "string", "minLength": 1 },
+          "outcome": {
+            "type": "string",
+            "enum": ["pass", "fail", "partial", "skipped"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "rem-sdlc",
+  "version": "0.2.1",
+  "description": "Deterministic, gated SDLC loop for full-stack JavaScript projects. Track-driven, Playwright-validated, security-reviewed, PR-completed.",
+  "author": {
+    "name": "RemGrace",
+    "github": "RemGrace"
+  },
+  "license": "MIT",
+  "keywords": [
+    "sdlc",
+    "workflow",
+    "playwright",
+    "code-review",
+    "security-review",
+    "pr-automation",
+    "full-stack",
+    "javascript"
+  ]
+}

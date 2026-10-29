@@ -1,0 +1,80 @@
+# rem-sdlc working directory (created on host projects, not on this repo;
+# kept here so contributors testing locally don't commit scratch artifacts)
+_/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Node (if contributors run tooling locally)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Coverage / build artifacts
+coverage/
+dist/
+build/
+.turbo/
+
+# skills.sh mirrors (canonical skills live in skills/)
+.agents/
+
+# skills.sh multi-agent install pollution
+.claude/
+.grok/
+.windsurf/
+.cursor/
+.continue/
+.codex/
+.factory/
+.goose/
+.roo/
+.junie/
+.kilocode/
+.pi/
+.qwen/
+.trae/
+.zencoder/
+agent/
+data/
+.aider-desk/
+.augment/
+.autohand/
+.bob/
+.adal/
+.mcpjam/
+.moxby/
+.mux/
+.neovate/
+.ona/
+.openhands/
+.pochi/
+.qoder/
+.reasonix/
+.rovodev/
+.tabnine/
+.terramind/
+.tinycloud/
+.vibe/
+.zcode/
+.hermes/
+.iflow/
+.inferencesh/
+.jazz/
+.kimchi/
+.kiro/
+.kode/
+.lingma/
+.cortex/
+.crush/
+.devin/
+.forge/
+.codeartsdoer/
+.codebuddy/
+.codemaker/
+.codestudio/
+.commandcode/
+

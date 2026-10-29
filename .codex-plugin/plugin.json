@@ -1,0 +1,40 @@
+{
+  "name": "rem-sdlc",
+  "version": "0.2.1",
+  "description": "Deterministic, gated SDLC loop for full-stack JavaScript projects. Track-driven, Playwright-validated, security-reviewed, PR-completed.",
+  "author": {
+    "name": "RemGrace",
+    "url": "https://github.com/RemGrace"
+  },
+  "license": "MIT",
+  "keywords": [
+    "sdlc",
+    "workflow",
+    "playwright",
+    "code-review",
+    "security-review",
+    "pr-automation",
+    "full-stack",
+    "javascript"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Rem SDLC",
+    "shortDescription": "Run a gated ticket-to-PR development loop",
+    "longDescription": "Rem SDLC guides Codex through a deterministic development cycle: intake, implementation, validation, review, PR creation, review comments, and revalidation. It uses the existing track-file, schema, command, agent, and template documentation in this plugin as the source of truth.",
+    "developerName": "RemGrace",
+    "category": "Engineering",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Initialize rem-sdlc for this repo",
+      "Run rem-sdlc intake for PROJ-123",
+      "Continue the rem-sdlc cycle"
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}
