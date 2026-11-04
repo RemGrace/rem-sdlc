@@ -211,4 +211,4 @@ Work/{project}/teach/{timestamp}.md
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Based on agentic-sdlc by Serhii Perehonchuk.
+MIT — see [LICENSE](LICENSE).
